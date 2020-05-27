@@ -112,3 +112,53 @@ pub mod ast_printer {
         }
     }
 }
+
+pub mod ast_graph {
+    use petgraph::dot::{Config, Dot};
+    use petgraph::graph::{DefaultIx, DiGraph, NodeIndex};
+    use std::vec::Vec;
+    use swc_ecma_ast::{ModuleItem, Stmt};
+
+    pub fn module_item_vector_to_graph(module_vec: Vec<ModuleItem>) {
+        let vertex_count = module_vec.len();
+        if vertex_count > 0 {
+            let edge_count = vertex_count - 1;
+            let mut edges_vec: Vec<(&swc_ecma_ast::ModuleItem, &swc_ecma_ast::ModuleItem)> =
+                Vec::with_capacity(edge_count);
+            let mut node_index_vec: Vec<NodeIndex> = Vec::with_capacity(vertex_count);
+            let mut digraph_module_items = DiGraph::<
+                &swc_ecma_ast::ModuleItem,
+                (&swc_ecma_ast::ModuleItem, &swc_ecma_ast::ModuleItem),
+            >::with_capacity(vertex_count, edge_count);
+            let mut node_a = NodeIndex::new(0);
+            let mut node_b = NodeIndex::new(0);
+            if vertex_count > 1 {
+                for i in 0..edge_count {
+                    if i == 0 {
+                        node_a = digraph_module_items.add_node(&module_vec[i]);
+                        node_b = digraph_module_items.add_node(&module_vec[i + 1]);
+                        digraph_module_items.add_edge(
+                            node_a,
+                            node_b,
+                            (&module_vec[i], &module_vec[i + 1]),
+                        );
+                    } else {
+                        node_a = node_b;
+                        node_b = digraph_module_items.add_node(&module_vec[i + 1]);
+                        digraph_module_items.add_edge(
+                            node_a,
+                            node_b,
+                            (&module_vec[i], &module_vec[i + 1]),
+                        );
+                    }
+                }
+            } else {
+                digraph_module_items.add_node(&module_vec[0]);
+            }
+            println!(
+                "{:?}",
+                Dot::with_config(&digraph_module_items, &[Config::EdgeNoLabel])
+            );
+        }
+    }
+}
