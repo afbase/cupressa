@@ -2,7 +2,7 @@
 extern crate swc_common;
 extern crate cupressa;
 extern crate swc_ecma_parser;
-use cupressa::ast::ast_graph::module_item_vector_to_graph;
+use cupressa::ast::ast_graph::module_item_vector_to_digraph;
 use cupressa::ast::ast_printer::expand_module_item_vector;
 use std::path::Path;
 use std::sync::Arc;
@@ -48,7 +48,7 @@ fn main() {
         let module_body = module.body;
         println!("{} {}", "module length:", module_body.len());
         // expand_module_item_vector(module_body);
-        module_item_vector_to_graph(module_body);
+        let graph = module_item_vector_to_digraph(&module_body);
         println!("{}", "success");
         // for i in 0..module_body.len() {
         //     println!("{:?}",module_body[i]);

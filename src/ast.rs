@@ -119,16 +119,28 @@ pub mod ast_graph {
     use std::vec::Vec;
     use swc_ecma_ast::{ModuleItem, Stmt};
 
-    pub fn module_item_vector_to_graph(module_vec: Vec<ModuleItem>) {
+    pub fn module_item_vector_to_digraph<'a>(
+        module_vec: &'a Vec<ModuleItem>,
+    ) -> DiGraph<
+        &'a swc_ecma_ast::ModuleItem,
+        (
+            &'a swc_ecma_ast::ModuleItem,
+            &'a swc_ecma_ast::ModuleItem,
+        ),
+    > {
+        let mut digraph_module_items = DiGraph::<
+                &'a swc_ecma_ast::ModuleItem,
+                (&'a swc_ecma_ast::ModuleItem, &'a swc_ecma_ast::ModuleItem),
+            >::with_capacity(0, 0);
         let vertex_count = module_vec.len();
         if vertex_count > 0 {
             let edge_count = vertex_count - 1;
             let mut edges_vec: Vec<(&swc_ecma_ast::ModuleItem, &swc_ecma_ast::ModuleItem)> =
                 Vec::with_capacity(edge_count);
             let mut node_index_vec: Vec<NodeIndex> = Vec::with_capacity(vertex_count);
-            let mut digraph_module_items = DiGraph::<
-                &swc_ecma_ast::ModuleItem,
-                (&swc_ecma_ast::ModuleItem, &swc_ecma_ast::ModuleItem),
+            digraph_module_items = DiGraph::<
+                &'a swc_ecma_ast::ModuleItem,
+                (&'a swc_ecma_ast::ModuleItem, &'a swc_ecma_ast::ModuleItem),
             >::with_capacity(vertex_count, edge_count);
             let mut node_a = NodeIndex::new(0);
             let mut node_b = NodeIndex::new(0);
@@ -160,5 +172,6 @@ pub mod ast_graph {
                 Dot::with_config(&digraph_module_items, &[Config::EdgeNoLabel])
             );
         }
+        digraph_module_items
     }
 }
